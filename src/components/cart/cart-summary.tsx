@@ -5,12 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useCart } from "@/context/cart.context";
 import Link from "next/link";
 import { ShoppingBag } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const SHIPPING_COST = 10;
 const TAX_RATE = 0.1;
 
 export function CartSummary() {
   const { cart, clearCart } = useCart();
+  const router = useRouter();
 
   const subtotal = cart.totalPrice;
   const tax = subtotal * TAX_RATE;
@@ -44,9 +46,13 @@ export function CartSummary() {
           </span>
         </div>
 
-        <Button className="w-full h-12 text-base font-semibold mb-3">
+        <Button
+          className="w-full h-12 text-base font-semibold mb-3"
+          onClick={() => router.push("/checkout")}
+          disabled={cart.items.length === 0}
+        >
           <ShoppingBag className="mr-2 h-5 w-5" />
-          Proceed to Checkout
+          Checkout
         </Button>
 
         <Button variant="outline" className="w-full h-10" onClick={clearCart}>
