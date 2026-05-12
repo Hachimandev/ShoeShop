@@ -88,7 +88,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const existingItem = currentItems.find(
         (item) =>
           (item.product.id || item.product.productId) ===
-            (product.id || product.productId) &&
+          (product.id || product.productId) &&
           item.size === size &&
           item.color === color,
       );
@@ -141,8 +141,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         quantity <= 0
           ? currentItems.filter((item) => item.id !== id)
           : currentItems.map((item) =>
-              item.id === id ? { ...item, quantity } : item,
-            );
+            item.id === id ? { ...item, quantity } : item,
+          );
 
       const { totalItems, totalPrice } = calculateTotals(newItems);
       return {
@@ -166,9 +166,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const backendItems: CartItemDTO[] = currentItems.map((item) => {
       // Find matching detail from product details array to get the real database ID
       const detail = item.product.productDetails?.find(
-        (d: any) => d.size === item.size && d.color === item.color
+        (d: any) => String(d.size) === String(item.size) && String(d.color).toLowerCase() === String(item.color).toLowerCase()
       );
-      
+
+      if (!detail) {
+        console.warn(`Product detail not found for ${item.product.name} (Size: ${item.size}, Color: ${item.color})`);
+      }
+
       return {
         productDetailId: detail?.productDetailId || `${item.product.id || item.product.productId}-${item.size}-${item.color}`,
         quantity: item.quantity,
