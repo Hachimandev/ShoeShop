@@ -68,6 +68,14 @@ export const orderService = {
     return response.data;
   },
 
+  /** Khách xác nhận đã nhận hàng: SHIPPING → DELIVERED */
+  confirmReceived: async (id: string, customerId: string): Promise<Order> => {
+    const response = await api.put(`/orders/${id}/confirm-received`, null, {
+      params: { customerId },
+    });
+    return response.data;
+  },
+
   // Tính toán giá cuối cùng cho cart
   calculateFinalPrice: async (cart: Cart): Promise<number> => {
     const response = await api.post("/orders/calculate-price", cart);

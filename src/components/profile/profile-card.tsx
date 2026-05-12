@@ -1,11 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { User, Package, Heart, LogOut, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+
+export type ProfileNavKey = "profile" | "orders" | "wishlist";
 
 export interface ProfileCardProps {
   user: {
@@ -14,9 +18,14 @@ export interface ProfileCardProps {
     role?: string;
   };
   onLogout: () => void;
+  activeNav?: ProfileNavKey;
 }
 
-export function ProfileCard({ user, onLogout }: ProfileCardProps) {
+export function ProfileCard({
+  user,
+  onLogout,
+  activeNav = "profile",
+}: ProfileCardProps) {
   const displayName = user.fullName || user.username || "User";
   const initials = displayName.substring(0, 1).toUpperCase();
 
@@ -56,18 +65,34 @@ export function ProfileCard({ user, onLogout }: ProfileCardProps) {
 
       <CardContent className="p-0">
         <nav className="flex flex-col">
-          <button className="flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors text-primary font-bold border-l-4 border-primary">
+          <Link
+            href="/profile"
+            className={cn(
+              "flex items-center gap-3 px-6 py-4 transition-colors hover:bg-slate-50",
+              activeNav === "profile"
+                ? "border-l-4 border-primary font-bold text-primary"
+                : "border-l-4 border-transparent font-medium text-slate-600",
+            )}
+          >
             <User className="h-5 w-5" />
-            Profile Information
-          </button>
-          <button className="flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors text-slate-600 font-medium">
+            Thông tin tài khoản
+          </Link>
+          <Link
+            href="/profile/orders"
+            className={cn(
+              "flex items-center gap-3 px-6 py-4 transition-colors hover:bg-slate-50",
+              activeNav === "orders"
+                ? "border-l-4 border-primary font-bold text-primary"
+                : "border-l-4 border-transparent font-medium text-slate-600",
+            )}
+          >
             <Package className="h-5 w-5" />
-            My Orders
-          </button>
-          <button className="flex items-center gap-3 px-6 py-4 hover:bg-slate-50 transition-colors text-slate-600 font-medium">
+            Đơn hàng của tôi
+          </Link>
+          <span className="flex cursor-not-allowed items-center gap-3 px-6 py-4 font-medium text-slate-400">
             <Heart className="h-5 w-5" />
-            Wishlist
-          </button>
+            Yêu thích
+          </span>
           <button
             onClick={onLogout}
             className="flex items-center gap-3 px-6 py-4 hover:bg-rose-50 transition-colors text-rose-600 font-medium"
