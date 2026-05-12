@@ -51,12 +51,11 @@ export enum PaymentMethod {
 
 export enum OrderStatus {
   PENDING = "PENDING",
-  CONFIRMED = "CONFIRMED",
-  PROCESSING = "PROCESSING",
-  SHIPPED = "SHIPPED",
+  SHIPPING = "SHIPPING",
   DELIVERED = "DELIVERED",
   CANCELLED = "CANCELLED",
   RETURNED = "RETURNED",
+  AWAITING_CANCELLATION = "AWAITING_CANCELLATION",
 }
 
 export interface Order {

@@ -6,6 +6,7 @@ import {
   LogOut,
   Settings,
   ShoppingCart,
+  LayoutDashboard,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ export function Header() {
   const [user, setUser] = useState<{
     username?: string;
     fullName?: string;
+    role?: string;
   } | null>(null);
   const { cart } = useCart();
 
@@ -33,9 +35,20 @@ export function Header() {
     const checkAuth = () => {
       const token = localStorage.getItem("token");
       const storedUser = localStorage.getItem("user");
+      const storedRoles = localStorage.getItem("roles");
+      
       setIsLoggedIn(!!token);
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        if (storedRoles) {
+          try {
+            const rolesArray = JSON.parse(storedRoles);
+            if (Array.isArray(rolesArray) && rolesArray.length > 0) {
+              parsedUser.role = rolesArray[0];
+            }
+          } catch(e) {}
+        }
+        setUser(parsedUser);
       } else {
         setUser(null);
       }
@@ -131,6 +144,17 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {user?.role?.includes("ADMIN") && (
+                <DropdownMenuItem asChild>
+                  <Link
+                    href="/admin"
+                    className="cursor-pointer w-full flex items-center"
+                  >
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem asChild>
                 <Link
                   href="/profile"
