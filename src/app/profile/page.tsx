@@ -157,7 +157,7 @@ export default function ProfilePage() {
     <div className="container mx-auto py-10 px-4 max-w-6xl">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          <ProfileCard user={user} onLogout={handleLogout} />
+          <ProfileCard user={user} onLogout={handleLogout} activeNav="profile" />
         </div>
         <ProfileSummary user={user} onOpenEdit={handleOpenEdit} />
       </div>

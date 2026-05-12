@@ -30,6 +30,8 @@ interface UseOrderReturn {
     approve: boolean,
   ) => Promise<Order | null>;
 
+  confirmReceived: (id: string, customerId: string) => Promise<Order | null>;
+
   // Utility functions
   getCustomerIdByUsername: (username: string) => Promise<string | null>;
   getRecentOrders: (limit?: number) => Promise<Order[] | null>;
@@ -172,6 +174,22 @@ export function useOrder(): UseOrderReturn {
     [],
   );
 
+  const confirmReceived = useCallback(
+    async (id: string, customerId: string): Promise<Order | null> => {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await orderService.confirmReceived(id, customerId);
+        return result;
+      } catch (err) {
+        return handleError(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
   const getCustomerIdByUsername = useCallback(
     async (username: string): Promise<string | null> => {
       setLoading(true);
@@ -227,6 +245,7 @@ export function useOrder(): UseOrderReturn {
     getOrderById,
     updateOrderStatus,
     cancelOrder,
+    confirmReceived,
     getCustomerIdByUsername,
     getRecentOrders,
     exportToExcel,

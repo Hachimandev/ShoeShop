@@ -208,7 +208,7 @@ export default function CheckoutPage() {
         // Xóa giỏ hàng và chuyển hướng
         clearCart();
         setTimeout(() => {
-          router.push("/orders");
+          router.push("/profile/orders");
         }, 1600);
       }
     } catch (error: any) {
