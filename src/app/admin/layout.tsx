@@ -14,12 +14,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   const navItems = [
     { name: "Thống kê", href: "/admin/dashboard", icon: LayoutDashboard },
-    { name: "Orders", href: "/admin", icon: ShoppingBag },
-    { name: "Products", href: "/admin/products", icon: Box },
+    { name: "Đơn hàng", href: "/admin/orders", icon: ShoppingBag },
+    { name: "Sản phẩm", href: "/admin/products", icon: Box },
     { name: "Nhà cung cấp", href: "/admin/suppliers", icon: Truck },
     { name: "Khách hàng", href: "/admin/customers", icon: Users },
     { name: "Nhân viên", href: "/admin/employees", icon: UserCog },
-    { name: "Settings", href: "/admin/settings", icon: Settings },
+    { name: "Cài đặt", href: "/admin/settings", icon: Settings },
   ];
 
   return (
@@ -27,7 +27,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r hidden md:block">
         <div className="p-6 border-b">
-          <h2 className="text-xl font-bold tracking-tight text-gray-900">Admin Panel</h2>
+          <h2 className="text-xl font-bold tracking-tight text-gray-900">Dashboard</h2>
         </div>
         <nav className="p-4 space-y-1.5">
           {navItems.map((item) => {
