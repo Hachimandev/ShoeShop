@@ -249,12 +249,12 @@ export default function OrderDetailPage({
                   >
                     {orderStatusLabelVi(order.orderStatus)}
                   </Badge>
-                  <p className="text-right">
+                  <div className="text-right">
                     <span className="text-sm text-slate-600">Tổng tiền:</span>
                     <p className="text-3xl font-black text-primary mt-1">
                       {formatOrderVnd(order.totalAmount)}
                     </p>
-                  </p>
+                  </div>
                 </div>
               </div>
             </CardHeader>
