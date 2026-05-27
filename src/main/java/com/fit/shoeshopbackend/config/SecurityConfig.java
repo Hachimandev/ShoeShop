@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/promotions/**").permitAll()
                         .requestMatchers("/api/customers/**").permitAll()
                         .requestMatchers("/api/comments/**").permitAll()
+                        .requestMatchers("/api/ai/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
 
                         .anyRequest().authenticated()
