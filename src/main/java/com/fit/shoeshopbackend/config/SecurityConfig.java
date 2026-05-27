@@ -19,6 +19,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -69,6 +70,10 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "https://shoe-shop-front-end-flax.vercel.app/"
         ));
+        config.setAllowedOriginPatterns(Arrays.asList(
+        "http://localhost:3000", 
+        "https://shoe-shop-front-end-flax.vercel.app"
+    ));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setExposedHeaders(List.of("Authorization", "Content-Type"));
