@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Trash2, Minus, Plus } from "lucide-react";
 import { CartItem as CartItemType } from "@/types/cart";
 import { useCart } from "@/context/cart.context";
@@ -15,22 +14,21 @@ export function CartItem({ item }: CartItemProps) {
   const { updateQuantity, removeFromCart } = useCart();
   const productName =
     item.product.name || item.product.productName || "Unknown Product";
-  const productImage = item.product.image;
+  const productImage = item.product.image || "/login_picture.jpg";
 
   return (
     <div className="flex gap-4 py-4 border-b border-gray-200">
       <div className="relative h-24 w-24 flex-shrink-0 rounded-lg bg-gray-100 overflow-hidden">
         <Image
-          src={
-            item.product.image
-              ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/images/${item.product.image}`
-              : "/login_picture.jpg"
-          }
-          //   src={productImage}
+          src={productImage}
           alt={productName}
           fill
           className="object-cover"
-          sizes="(max-width: 96px) 100vw, 96px"
+          sizes="96px"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = "/login_picture.jpg";
+          }}
         />
       </div>
 

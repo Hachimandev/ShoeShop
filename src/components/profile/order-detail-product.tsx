@@ -73,6 +73,7 @@ export function OrderDetailProduct({
             <Image
               alt={productName}
               fill
+              sizes="(max-width: 768px) 100vw, 25vw"
               className="object-cover"
               src={productImage}
               onError={(e) => {
