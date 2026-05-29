@@ -11,6 +11,7 @@ jobs:
     steps:
     - name: Deploy to EC2 via SSH
       uses: appleboy/ssh-action@v1.0.0
+
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USERNAME }}
@@ -22,7 +23,6 @@ jobs:
         script: |
           set -e
 
-          echo "===== Move to project ====="
           cd ~/ShoeShopBackEnd
 
           echo "===== Pull latest code ====="
@@ -31,8 +31,11 @@ jobs:
           echo "===== Stop old containers ====="
           docker-compose down
 
-          echo "===== Build and start containers ====="
-          docker-compose up -d --build
+          echo "===== Build backend ====="
+          DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 docker-compose build backend
+
+          echo "===== Start containers ====="
+          docker-compose up -d
 
           echo "===== Remove unused images ====="
           docker image prune -af
@@ -40,6 +43,5 @@ jobs:
           echo "===== Running containers ====="
           docker ps
 
-          echo "===== Test backend ====="
-          curl http://localhost:8080/api/products || true
-
+          echo "===== Backend health check ====="
+          curl http://localhost:8080/api/products
