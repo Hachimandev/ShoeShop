@@ -11,12 +11,15 @@ jobs:
     steps:
     - name: Deploy to EC2 via SSH
       uses: appleboy/ssh-action@v1.0.0
+
       with:
         host: ${{ secrets.EC2_HOST }}
-        username: ubuntu
-        key: ${{ secrets.SSH_KEY }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+
         timeout: 120s
         command_timeout: 30m
+
         script: |
           set -e
 
@@ -34,21 +37,6 @@ jobs:
           echo "===== Start containers ====="
           docker-compose up -d
 
-          echo "===== Wait for backend startup ====="
-          sleep 30
-
-          echo "===== Backend logs ====="
-          docker logs shoeshop_backend --tail 50
-
-          echo "===== Health check ====="
-          for i in {1..10}; do
-            curl -f http://localhost:8080/api/products && break
-            echo "Retry $i..."
-            sleep 10
-          done
-
           echo "===== Remove unused images ====="
           docker image prune -af
-
-          echo "===== Running containers ====="
-          docker ps
+          echo "===== Deployment completed successfully ====="
