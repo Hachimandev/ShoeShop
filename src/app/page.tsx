@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Star, ShoppingBag, ShieldCheck, Truck, Headphones, RotateCcw, Zap } from "lucide-react";
+import { ChevronRight, ChevronLeft, Star, ShoppingBag, ShieldCheck, Truck, Headphones, RotateCcw, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { productService } from "@/services/product.service";
 import { Product } from "@/types/product";
 
@@ -34,13 +34,23 @@ const features = [
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (carouselRef.current) {
+      const { scrollLeft, clientWidth } = carouselRef.current;
+      const scrollAmount = clientWidth * 0.75;
+      const scrollTo = direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount;
+      carouselRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const data = await productService.getAllProducts();
-        // Just take the first 3 for the featured section
-        setFeaturedProducts(data.slice(0, 3));
+        // Take the first 8 for the featured section to make it scrollable
+        setFeaturedProducts(data.slice(0, 8));
       } catch (error) {
         console.error("Failed to fetch products:", error);
       } finally {
@@ -119,7 +129,7 @@ export default function Home() {
                   className="object-cover rounded-[3rem] shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-700 hover:scale-[1.02]"
                   fill
                   sizes="(max-width: 768px) 100vw, 50vw"
-                  src="/login_picture.jpg"
+                  src="/landing_picture.png"
                   priority
                   loading="eager"
                 />
@@ -182,18 +192,45 @@ export default function Home() {
               <h2 className="text-primary font-bold tracking-widest uppercase text-sm">Trending Now</h2>
               <h3 className="text-3xl md:text-5xl font-black tracking-tight">Hottest Drops</h3>
             </div>
-            <Link href="/products">
-              <Button variant="outline" className="rounded-full bg-white hover:bg-slate-100 border-2">
-                View All Products <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+            <div className="flex items-center gap-4">
+              {/* Slider Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full bg-white hover:bg-slate-100 border-2 h-11 w-11 flex items-center justify-center cursor-pointer"
+                  onClick={() => scroll('left')}
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="h-5 w-5 text-slate-800" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full bg-white hover:bg-slate-100 border-2 h-11 w-11 flex items-center justify-center cursor-pointer"
+                  onClick={() => scroll('right')}
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="h-5 w-5 text-slate-800" />
+                </Button>
+              </div>
+              <Link href="/products">
+                <Button variant="outline" className="rounded-full bg-white hover:bg-slate-100 border-2 px-6 h-11 text-sm font-bold">
+                  View All Products <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div
+            ref={carouselRef}
+            className="flex gap-6 overflow-x-auto no-scrollbar pb-8 snap-x snap-mandatory scroll-smooth"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             {isLoading ? (
               // Loading Skeletons
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-[2rem] p-4 h-[500px] animate-pulse shadow-sm">
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="min-w-[280px] sm:min-w-[320px] md:min-w-[380px] bg-white rounded-[2rem] p-4 h-[500px] animate-pulse shadow-sm flex-shrink-0">
                   <div className="aspect-[4/5] rounded-3xl bg-slate-200 mb-6" />
                   <div className="h-6 bg-slate-200 rounded w-3/4 mb-3" />
                   <div className="h-4 bg-slate-200 rounded w-1/2" />
@@ -201,7 +238,7 @@ export default function Home() {
               ))
             ) : featuredProducts.length > 0 ? (
               featuredProducts.map((product, i) => (
-                <Link key={product.productId} href={`/products/${product.productId}`} className="group block">
+                <Link key={product.productId} href={`/products/${product.productId}`} className="group block min-w-[280px] sm:min-w-[320px] md:min-w-[380px] snap-start flex-shrink-0">
                   <div className="bg-white rounded-[2rem] p-4 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1.5 border border-slate-100/60 shadow-sm h-full flex flex-col">
                     <div className="aspect-[4/5] overflow-hidden rounded-3xl bg-gradient-to-br from-slate-50 to-slate-100/50 relative mb-6">
                       <Image
@@ -232,7 +269,7 @@ export default function Home() {
                           <span className="text-[11px] font-bold text-slate-600">{product.rating || "5.0"}</span>
                         </div>
                       </div>
-                      <h3 className="font-bold text-2xl leading-tight mb-4 group-hover:text-primary transition-colors text-slate-850">
+                      <h3 className="font-bold text-2xl leading-tight mb-4 group-hover:text-primary transition-colors text-slate-850 line-clamp-1">
                         {product.productName}
                       </h3>
                       <div className="mt-auto flex items-end justify-between pt-4 border-t border-slate-50">
@@ -247,7 +284,7 @@ export default function Home() {
               ))
             ) : (
               // Fallback if no products
-              <div className="col-span-full text-center py-20 bg-white rounded-3xl border border-dashed">
+              <div className="w-full text-center py-20 bg-white rounded-3xl border border-dashed">
                 <p className="text-slate-500">No products available at the moment.</p>
               </div>
             )}
