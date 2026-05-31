@@ -220,4 +220,88 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/forgot-password/send-otp")
+    public ResponseEntity<?> forgotPasswordSendOtp(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Email không được trống.");
+        }
+
+        if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+            return ResponseEntity.badRequest().body("Định dạng email không hợp lệ.");
+        }
+
+        if (!userRepository.existsByEmail(email)) {
+            return ResponseEntity.badRequest().body("Email không tồn tại trong hệ thống.");
+        }
+
+        String otp = String.format("%06d", new java.util.Random().nextInt(900000) + 100000);
+        redisTemplate.opsForValue().set("forgot_password_otp:" + email, otp, 60, TimeUnit.SECONDS);
+
+        emailService.sendOtpEmail(email, otp);
+
+        return ResponseEntity.ok(Map.of("message", "Mã OTP phục hồi đã được gửi đến email của bạn."));
+    }
+
+    @PostMapping("/forgot-password/verify-otp")
+    public ResponseEntity<?> forgotPasswordVerifyOtp(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String otp = payload.get("otp");
+
+        if (email == null || email.trim().isEmpty() || otp == null || otp.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Email và mã OTP không được trống.");
+        }
+
+        String cachedOtp = redisTemplate.opsForValue().get("forgot_password_otp:" + email);
+        if (cachedOtp == null) {
+            return ResponseEntity.badRequest().body("Mã OTP đã hết hạn hoặc không tồn tại. Vui lòng gửi lại.");
+        }
+
+        if (!cachedOtp.equals(otp)) {
+            return ResponseEntity.badRequest().body("Mã OTP không chính xác.");
+        }
+
+        redisTemplate.opsForValue().set("forgot_password_verified:" + email, "true", 300, TimeUnit.SECONDS);
+        redisTemplate.delete("forgot_password_otp:" + email);
+
+        return ResponseEntity.ok(Map.of("message", "Xác thực OTP thành công."));
+    }
+
+    @Transactional
+    @PostMapping("/forgot-password/reset-password")
+    public ResponseEntity<?> forgotPasswordResetPassword(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        String password = payload.get("password");
+        String confirmPassword = payload.get("confirmPassword");
+
+        if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Email và mật khẩu không được trống.");
+        }
+
+        String isVerified = redisTemplate.opsForValue().get("forgot_password_verified:" + email);
+        if (isVerified == null || !isVerified.equals("true")) {
+            return ResponseEntity.badRequest().body("Phiên xác thực đã hết hạn hoặc chưa xác thực OTP. Vui lòng thử lại.");
+        }
+
+        if (password.length() < 8) {
+            return ResponseEntity.badRequest().body("Mật khẩu phải có độ dài tối thiểu 8 ký tự.");
+        }
+
+        if (confirmPassword == null || !confirmPassword.equals(password)) {
+            return ResponseEntity.badRequest().body("Mật khẩu xác nhận không khớp.");
+        }
+
+        Account account = userRepository.findByEmail(email)
+                .orElse(null);
+        if (account == null) {
+            return ResponseEntity.badRequest().body("Tài khoản không tồn tại.");
+        }
+
+        account.setPassword(passwordEncoder.encode(password));
+        userRepository.save(account);
+
+        redisTemplate.delete("forgot_password_verified:" + email);
+
+        return ResponseEntity.ok(Map.of("message", "Đặt lại mật khẩu thành công."));
+    }
 }
