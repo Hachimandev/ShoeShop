@@ -7,12 +7,36 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bot, Lightbulb, Send, Trash2, ShoppingCart, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 export const AIChatBox = () => {
   const { messages, isLoading, sendMessage, clearChat, messagesEndRef } =
     useAIChat();
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Get last order step from messages
+  const getLastOrderStep = () => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const step = messages[i].metadata?.orderStep;
+      if (step) {
+        return step;
+      }
+    }
+    return null;
+  };
+
+  const getPlaceholder = () => {
+    const lastStep = getLastOrderStep();
+    switch (lastStep) {
+      case "ASKING_FOR_ADDRESS":
+        return "Nhập địa chỉ và số điện thoại (ví dụ: Địa chỉ: 123 Đường ABC, SĐT: 0123456789)";
+      case "ASKING_FOR_CONFIRMATION":
+        return "Xác nhận đặt hàng (gõ: có/không)";
+      default:
+        return "Bạn muốn tìm giày như thế nào?";
+    }
+  };
 
   const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
