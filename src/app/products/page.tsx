@@ -399,11 +399,11 @@ export default function ProductsPage() {
                     href={`/products/${product.productId || product.id}`}
                     className="group"
                   >
-                    <div className="bg-white rounded-3xl p-3 transition-all hover:shadow-xl border border-slate-100 hover:border-slate-200/50 shadow-sm">
-                      <div className="aspect-square overflow-hidden rounded-2xl bg-slate-50 relative mb-4">
+                    <div className="bg-white rounded-[2rem] p-3 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1.5 border border-slate-100/60 shadow-sm flex flex-col h-full">
+                      <div className="aspect-square overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 to-slate-100/50 relative mb-4">
                         <Image
                           alt={product.productName || "Product"}
-                          className="object-cover transition-transform group-hover:scale-110 duration-500"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           src={product.image || "/login_picture.jpg"}
@@ -412,26 +412,33 @@ export default function ProductsPage() {
                             target.src = "/login_picture.jpg";
                           }}
                         />
-                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <div className="bg-white/95 backdrop-blur-sm p-2.5 rounded-full shadow-md hover:bg-primary hover:text-white transition-colors">
-                            <ShoppingBag className="h-5 w-5" />
+                        {/* Glassmorphism Category Badge */}
+                        <div className="absolute top-3 left-3 bg-white/70 backdrop-blur-md px-2.5 py-1 rounded-full shadow-sm border border-white/40">
+                          <span className="text-[10px] font-black tracking-wider uppercase text-slate-700">
+                            {typeof product.category === 'object' ? product.category?.categoryName : product.category}
+                          </span>
+                        </div>
+                        {/* Dynamic Floating Action Icon */}
+                        <div className="absolute bottom-3 right-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                          <div className="bg-primary text-white p-3 rounded-2xl shadow-lg hover:scale-110 active:scale-95 transition-transform duration-200">
+                            <ShoppingBag className="h-4.5 w-4.5" />
                           </div>
                         </div>
                       </div>
-                      <div className="space-y-1 px-1">
-                        <p className="text-xs font-bold text-primary uppercase tracking-wider">
-                          {typeof product.category === 'object' ? product.category?.categoryName : product.category}
+                      <div className="space-y-1 px-1.5 flex-1 flex flex-col">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                          {product.brand || "Premium Brand"}
                         </p>
-                        <h3 className="font-bold text-[15px] leading-snug group-hover:text-primary transition-colors line-clamp-1">
+                        <h3 className="font-bold text-base leading-snug text-slate-800 group-hover:text-primary transition-colors line-clamp-1">
                           {product.productName || product.name}
                         </h3>
-                        <div className="flex items-center justify-between mt-2 pt-1 border-t border-slate-50">
-                          <span className="font-black text-[16px] text-slate-900">
+                        <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-50">
+                          <span className="font-black text-[17px] text-slate-950">
                             ${product.price ? product.price.toLocaleString() : "0"}.00
                           </span>
-                          <div className="flex items-center gap-1 text-yellow-500">
+                          <div className="flex items-center gap-1 bg-amber-50 text-amber-500 px-2 py-0.5 rounded-lg border border-amber-100/50">
                             <Star className="h-3.5 w-3.5 fill-current" />
-                            <span className="text-xs font-bold text-slate-500">
+                            <span className="text-[11px] font-bold text-slate-600">
                               {product.rating || "4.5"}
                             </span>
                           </div>
