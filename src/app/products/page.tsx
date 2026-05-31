@@ -113,19 +113,19 @@ export default function ProductsPage() {
     } else if (priceRange) {
       if (priceRange === "under_50") {
         minPrice = 0;
-        maxPrice = 50;
+        maxPrice = 5000;
       } else if (priceRange === "50_100") {
-        minPrice = 50;
-        maxPrice = 100;
+        minPrice = 5000;
+        maxPrice = 10000;
       } else if (priceRange === "100_150") {
-        minPrice = 100;
-        maxPrice = 150;
+        minPrice = 10000;
+        maxPrice = 15000;
       } else if (priceRange === "150_200") {
-        minPrice = 150;
-        maxPrice = 200;
+        minPrice = 15000;
+        maxPrice = 20000;
       } else if (priceRange === "over_200") {
-        minPrice = 200;
-        maxPrice = 999999;
+        minPrice = 20000;
+        maxPrice = 99999999;
       }
     }
 
@@ -171,19 +171,19 @@ export default function ProductsPage() {
       } else if (priceRange) {
         if (priceRange === "under_50") {
           minPrice = 0;
-          maxPrice = 50;
+          maxPrice = 5000;
         } else if (priceRange === "50_100") {
-          minPrice = 50;
-          maxPrice = 100;
+          minPrice = 5000;
+          maxPrice = 10000;
         } else if (priceRange === "100_150") {
-          minPrice = 100;
-          maxPrice = 150;
+          minPrice = 10000;
+          maxPrice = 15000;
         } else if (priceRange === "150_200") {
-          minPrice = 150;
-          maxPrice = 200;
+          minPrice = 15000;
+          maxPrice = 20000;
         } else if (priceRange === "over_200") {
-          minPrice = 200;
-          maxPrice = 999999;
+          minPrice = 20000;
+          maxPrice = 99999999;
         }
       }
 
@@ -263,11 +263,11 @@ export default function ProductsPage() {
         {/* Preset ranges */}
         <div className="space-y-2.5">
           {[
-            { label: "Dưới $50", value: "under_50" },
-            { label: "$50 - $100", value: "50_100" },
-            { label: "$100 - $150", value: "100_150" },
-            { label: "$150 - $200", value: "150_200" },
-            { label: "Trên $200", value: "over_200" },
+            { label: "Dưới 5,000 ₫", value: "under_50" },
+            { label: "5,000 ₫ - 10,000 ₫", value: "50_100" },
+            { label: "10,000 ₫ - 15,000 ₫", value: "100_150" },
+            { label: "15,000 ₫ - 20,000 ₫", value: "150_200" },
+            { label: "Trên 20,000 ₫", value: "over_200" },
           ].map((range) => (
             <label key={range.value} className="flex items-center gap-2.5 text-sm text-slate-600 hover:text-slate-900 cursor-pointer font-medium">
               <input
@@ -288,10 +288,10 @@ export default function ProductsPage() {
 
         {/* Custom range inputs */}
         <div className="pt-2 border-t border-slate-100">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Hoặc nhập khoảng giá ($)</p>
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Hoặc nhập khoảng giá (₫)</p>
           <div className="flex items-center gap-2">
             <Input
-              placeholder="Từ ($)"
+              placeholder="Từ (₫)"
               type="number"
               className="h-9 text-xs px-2.5 rounded-lg"
               value={minPriceInput}
@@ -302,7 +302,7 @@ export default function ProductsPage() {
             />
             <span className="text-slate-400 text-xs font-bold">-</span>
             <Input
-              placeholder="Đến ($)"
+              placeholder="Đến (₫)"
               type="number"
               className="h-9 text-xs px-2.5 rounded-lg"
               value={maxPriceInput}
@@ -434,7 +434,7 @@ export default function ProductsPage() {
                         </h3>
                         <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-50">
                           <span className="font-black text-[17px] text-slate-950">
-                            ${product.price ? product.price.toLocaleString() : "0"}.00
+                            {product.price ? product.price.toLocaleString("vi-VN") : "0"} ₫
                           </span>
                           <div className="flex items-center gap-1 bg-amber-50 text-amber-500 px-2 py-0.5 rounded-lg border border-amber-100/50">
                             <Star className="h-3.5 w-3.5 fill-current" />

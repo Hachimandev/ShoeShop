@@ -198,11 +198,11 @@ export default function ProductDetailPage({
               </h1>
               <div className="flex items-baseline gap-4">
                 <p className="text-4xl font-black text-primary">
-                  ${product.price?.toLocaleString()}.00
+                  {product.price?.toLocaleString("vi-VN")} ₫
                 </p>
                 {product.originalPrice && (
                   <p className="text-xl text-slate-400 line-through font-bold">
-                    ${product.originalPrice?.toLocaleString()}.00
+                    {product.originalPrice?.toLocaleString("vi-VN")} ₫
                   </p>
                 )}
               </div>
@@ -298,7 +298,7 @@ export default function ProductDetailPage({
               >
                 {addToCartLoading
                   ? "Adding..."
-                  : `ADD TO BAG — $${(product.price * quantity)?.toLocaleString()}.00`}
+                  : `THÊM VÀO GIỎ — ${(product.price * quantity)?.toLocaleString("vi-VN")} ₫`}
               </Button>
               <div className="flex items-center justify-center gap-2 text-sm font-bold text-green-600 py-2">
                 <div className="h-2 w-2 rounded-full bg-green-600 animate-pulse" />

@@ -275,7 +275,7 @@ export default function Home() {
                       <div className="mt-auto flex items-end justify-between pt-4 border-t border-slate-50">
                         <div>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-0.5">Price</p>
-                          <span className="font-black text-3xl text-slate-950">${product.price?.toLocaleString()}.00</span>
+                          <span className="font-black text-3xl text-slate-950">{product.price?.toLocaleString("vi-VN")} ₫</span>
                         </div>
                       </div>
                     </div>
