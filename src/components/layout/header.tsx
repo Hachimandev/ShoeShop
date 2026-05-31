@@ -47,7 +47,7 @@ export function Header() {
             if (Array.isArray(rolesArray) && rolesArray.length > 0) {
               parsedUser.role = rolesArray[0];
             }
-          } catch (e) {}
+          } catch (e) { }
         }
         setUser(parsedUser);
       } else {
