@@ -117,8 +117,8 @@ export default function CheckoutPage() {
     const fee =
       (cart?.items?.length || 0) > 0
         ? shippingMethod === "EXPRESS"
-          ? 25
-          : 10
+          ? 50000
+          : 30000
         : 0;
     const t = subtotal * 0.1;
     return { shippingFee: fee, tax: t, total: subtotal + fee + t };
