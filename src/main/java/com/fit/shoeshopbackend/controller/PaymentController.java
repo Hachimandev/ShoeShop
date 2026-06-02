@@ -65,7 +65,7 @@ public class PaymentController {
                     return ResponseEntity.ok(java.util.Map.of("success", true, "message", "Insufficient transfer amount."));
                 }
             } else {
-                return ResponseEntity.ok("Order not found: " + orderId);
+                return ResponseEntity.ok(java.util.Map.of("success", true, "message", "Order not found: " + orderId));
             }
         }
 
