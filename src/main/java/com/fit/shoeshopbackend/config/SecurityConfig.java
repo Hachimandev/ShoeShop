@@ -69,7 +69,7 @@ public class SecurityConfig {
                         
                         .requestMatchers("/api/ai/**").permitAll()
                         .requestMatchers("/api/payment/**").permitAll() // Cho phép Webhook SePay truy cập không cần token
-                        .requestMatchers("/h2-console/**").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll().requestMatchers("/error").permitAll()
 
                         .anyRequest().authenticated()
                 );
