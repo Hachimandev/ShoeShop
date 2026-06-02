@@ -23,15 +23,15 @@ public class PaymentController {
     private final EmailService emailService;
 
     @PostMapping("/sepay/webhook")
-    public ResponseEntity<String> handleSePayWebhook(@RequestBody SePayWebhookRequest request) {
+    public ResponseEntity<java.util.Map<String, Object>> handleSePayWebhook(@RequestBody SePayWebhookRequest request) {
         // Only process incoming transfers
         if (!"in".equalsIgnoreCase(request.getTransferType())) {
-            return ResponseEntity.ok("Not an incoming transfer, ignored.");
+            return ResponseEntity.ok(java.util.Map.of("success", true, "message", "Not an incoming transfer, ignored."));
         }
 
         String content = request.getContent();
         if (content == null || content.isEmpty()) {
-            return ResponseEntity.ok("Empty content, ignored.");
+            return ResponseEntity.ok(java.util.Map.of("success", true, "message", "Empty content, ignored."));
         }
 
         // Extract Order ID from content using a regex pattern, e.g., looking for "ORD-"
@@ -47,7 +47,7 @@ public class PaymentController {
                 Order order = optionalOrder.get();
                 // Check if the order is already paid to avoid double processing
                 if (order.getOrderStatus() == OrderStatus.PAID || order.getOrderStatus() == OrderStatus.SHIPPING) {
-                    return ResponseEntity.ok("Order already processed.");
+                    return ResponseEntity.ok(java.util.Map.of("success", true, "message", "Order already processed."));
                 }
 
                 // Simple verification: check if transfer amount matches order total amount
@@ -59,16 +59,16 @@ public class PaymentController {
                         emailService.sendOrderEmail(order.getCustomer().getEmail(), order);
                     }
                     
-                    return ResponseEntity.ok("Order status updated to PAID.");
+                    return ResponseEntity.ok(java.util.Map.of("success", true, "message", "Order status updated to PAID."));
                 } else {
                     // Could set status to a manual review state if amount is insufficient
-                    return ResponseEntity.ok("Insufficient transfer amount.");
+                    return ResponseEntity.ok(java.util.Map.of("success", true, "message", "Insufficient transfer amount."));
                 }
             } else {
                 return ResponseEntity.ok("Order not found: " + orderId);
             }
         }
 
-        return ResponseEntity.ok("No matching Order ID found in content.");
+        return ResponseEntity.ok(java.util.Map.of("success", true, "message", "No matching Order ID found in content."));
     }
 }
