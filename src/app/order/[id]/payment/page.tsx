@@ -93,7 +93,7 @@ export default function PaymentPage({
     );
   }
 
-  const qrUrl = `https://qr.sepay.vn/img?bank=${bankName}&acc=${accountNumber}&template=compact&amount=${order.totalAmount}&des=${encodeURIComponent(orderId)}`;
+  const qrUrl = `https://qr.sepay.vn/img?bank=${bankName}&acc=${accountNumber}&template=compact&amount=${order.totalAmount}&des=${encodeURIComponent('SEVQR ' + orderId)}`;
 
   return (
     <main className="min-h-screen bg-slate-50 py-12">
@@ -158,7 +158,7 @@ export default function PaymentPage({
                     <div className="flex justify-between items-center">
                       <span className="text-slate-500">Nội dung chuyển khoản</span>
                       <span className="font-mono bg-slate-200 px-3 py-1 rounded-lg font-semibold text-slate-900">
-                        {orderId}
+                        SEVQR {orderId}
                       </span>
                     </div>
                   </div>
