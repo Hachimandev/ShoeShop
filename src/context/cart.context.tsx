@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { CartItem, Cart } from "@/types/cart";
 import { Product } from "@/types/product";
+import { Promotion } from "@/types/promotion";
 import {
   CartItemDTO,
   Cart as BackendCart,
@@ -26,6 +27,8 @@ interface CartContextType {
   checkout: (customerId: string, paymentMethod: PaymentMethod) => Promise<any>;
   checkoutLoading: boolean;
   checkoutError: string | null;
+  applyPromotion: (promotion: Promotion) => void;
+  removePromotion: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -35,7 +38,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     items: [],
     totalItems: 0,
     totalPrice: 0,
+    subtotal: 0,
+    discountAmount: 0,
+    promotion: null,
   });
+  
   const {
     checkout: orderCheckout,
     loading: checkoutLoading,
@@ -50,13 +57,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       try {
         const parsed = JSON.parse(savedCart);
         if (parsed && Array.isArray(parsed.items)) {
-          setCart(parsed);
+          setCart({
+            ...parsed,
+            subtotal: parsed.subtotal || 0,
+            discountAmount: parsed.discountAmount || 0,
+            promotion: parsed.promotion || null
+          });
         } else {
-          setCart({ items: [], totalItems: 0, totalPrice: 0 });
+          setCart({ items: [], totalItems: 0, totalPrice: 0, subtotal: 0, discountAmount: 0, promotion: null });
         }
       } catch (error) {
         console.error("Failed to load cart from localStorage:", error);
-        setCart({ items: [], totalItems: 0, totalPrice: 0 });
+        setCart({ items: [], totalItems: 0, totalPrice: 0, subtotal: 0, discountAmount: 0, promotion: null });
       }
     }
   }, []);
@@ -68,13 +80,35 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cart]);
 
-  const calculateTotals = (items: CartItem[]) => {
+  const calculateTotals = (items: CartItem[], promotion: Promotion | null | undefined) => {
     const totalItems = (items || []).reduce((sum, item) => sum + item.quantity, 0);
-    const totalPrice = (items || []).reduce(
+    const subtotal = (items || []).reduce(
       (sum, item) => sum + item.price * item.quantity,
       0,
     );
-    return { totalItems, totalPrice };
+    
+    let discountAmount = 0;
+    if (promotion) {
+      if (promotion.discount <= 1) {
+         // Phần trăm (vd: 0.1 là 10%)
+         discountAmount = subtotal * promotion.discount;
+      } else if (promotion.discount <= 100 && promotion.discount > 1) {
+         // Nếu lưu kiểu 10 là 10%
+         discountAmount = subtotal * (promotion.discount / 100);
+      } else {
+         // Số tiền cố định
+         discountAmount = promotion.discount;
+      }
+      
+      // Không giảm giá quá giá trị đơn hàng
+      if (discountAmount > subtotal) {
+         discountAmount = subtotal;
+      }
+    }
+    
+    const totalPrice = subtotal - discountAmount;
+
+    return { totalItems, subtotal, discountAmount, totalPrice };
   };
 
   const addToCart = (
@@ -112,10 +146,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         newItems = [...currentItems, newItem];
       }
 
-      const { totalItems, totalPrice } = calculateTotals(newItems);
+      const { totalItems, subtotal, discountAmount, totalPrice } = calculateTotals(newItems, prevCart.promotion);
       return {
+        ...prevCart,
         items: newItems,
         totalItems,
+        subtotal,
+        discountAmount,
         totalPrice,
       };
     });
@@ -125,10 +162,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setCart((prevCart) => {
       const currentItems = prevCart?.items || [];
       const newItems = currentItems.filter((item) => item.id !== id);
-      const { totalItems, totalPrice } = calculateTotals(newItems);
+      const { totalItems, subtotal, discountAmount, totalPrice } = calculateTotals(newItems, prevCart.promotion);
       return {
+        ...prevCart,
         items: newItems,
         totalItems,
+        subtotal,
+        discountAmount,
         totalPrice,
       };
     });
@@ -144,10 +184,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             item.id === id ? { ...item, quantity } : item,
           );
 
-      const { totalItems, totalPrice } = calculateTotals(newItems);
+      const { totalItems, subtotal, discountAmount, totalPrice } = calculateTotals(newItems, prevCart.promotion);
       return {
+        ...prevCart,
         items: newItems,
         totalItems,
+        subtotal,
+        discountAmount,
         totalPrice,
       };
     });
@@ -158,6 +201,37 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       items: [],
       totalItems: 0,
       totalPrice: 0,
+      subtotal: 0,
+      discountAmount: 0,
+      promotion: null,
+    });
+  };
+
+  const applyPromotion = (promotion: Promotion) => {
+    setCart((prevCart) => {
+      const { totalItems, subtotal, discountAmount, totalPrice } = calculateTotals(prevCart.items, promotion);
+      return {
+        ...prevCart,
+        promotion,
+        totalItems,
+        subtotal,
+        discountAmount,
+        totalPrice,
+      };
+    });
+  };
+
+  const removePromotion = () => {
+    setCart((prevCart) => {
+      const { totalItems, subtotal, discountAmount, totalPrice } = calculateTotals(prevCart.items, null);
+      return {
+        ...prevCart,
+        promotion: null,
+        totalItems,
+        subtotal,
+        discountAmount,
+        totalPrice,
+      };
     });
   };
 
@@ -188,7 +262,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     return {
       items: backendItems,
-      promotionId: undefined, // Có thể thêm logic promotion sau
+      promotionId: cart.promotion?.promotionId,
       usedPoints: 0, // Có thể thêm logic points sau
     };
   };
@@ -223,6 +297,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         checkout,
         checkoutLoading,
         checkoutError,
+        applyPromotion,
+        removePromotion,
       }}
     >
       {children}
@@ -237,3 +313,4 @@ export function useCart() {
   }
   return context;
 }
+
