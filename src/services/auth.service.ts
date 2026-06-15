@@ -11,6 +11,7 @@ import {
 
 async function persistAuthSession(auth: AuthResponse) {
   localStorage.setItem("token", auth.token);
+  localStorage.setItem("refreshToken", auth.refreshToken);
   localStorage.setItem("username", auth.username);
   localStorage.setItem("roles", JSON.stringify(auth.roles));
 
@@ -47,6 +48,7 @@ export const authService = {
     const response = await api.post<AuthResponse>("/auth/login", data);
     if (response.data.token) {
       localStorage.setItem("token", response.data.token);
+      localStorage.setItem("refreshToken", response.data.refreshToken);
       localStorage.setItem("username", response.data.username);
       localStorage.setItem("roles", JSON.stringify(response.data.roles));
 
@@ -113,6 +115,7 @@ export const authService = {
 
   logout: () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("username");
     localStorage.removeItem("roles");
     localStorage.removeItem("user");

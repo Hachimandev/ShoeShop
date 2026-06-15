@@ -58,7 +58,22 @@ const RETRY_DELAY_MS = 3000; // 3 seconds retry delay
 
 interface CustomAxiosRequestConfig {
   _retryCount?: number;
+  _retry?: boolean;
 }
+
+let isRefreshing = false;
+let failedQueue: { resolve: (token: string) => void; reject: (err: any) => void }[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token as string);
+    }
+  });
+  failedQueue = [];
+};
 
 api.interceptors.response.use(
   (response) => response,
@@ -81,6 +96,75 @@ api.interceptors.response.use(
 
       showRateLimitNotification(serverMessage);
       return Promise.reject(error);
+    }
+
+    // Xử lý 401 Unauthorized: Refresh Token
+    if (response?.status === 401 && config && config.url !== "/auth/refresh") {
+      const customConfig = config as CustomAxiosRequestConfig & { headers: any };
+      
+      if (!customConfig._retry) {
+        if (isRefreshing) {
+          return new Promise(function (resolve, reject) {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              if (typeof customConfig.headers.set === "function") {
+                customConfig.headers.set("Authorization", `Bearer ${token}`);
+              } else {
+                customConfig.headers["Authorization"] = `Bearer ${token}`;
+              }
+              return api(customConfig as any);
+            })
+            .catch((err) => {
+              return Promise.reject(err);
+            });
+        }
+
+        customConfig._retry = true;
+        isRefreshing = true;
+
+        const refreshToken = localStorage.getItem("refreshToken");
+        if (!refreshToken) {
+            isRefreshing = false;
+            // No refresh token, perform logout
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            localStorage.removeItem("username");
+            localStorage.removeItem("roles");
+            localStorage.removeItem("user");
+            window.dispatchEvent(new Event("auth-change"));
+            return Promise.reject(error);
+        }
+
+        try {
+          const res = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+          const newToken = res.data.token;
+          const newRefreshToken = res.data.refreshToken;
+
+          localStorage.setItem("token", newToken);
+          localStorage.setItem("refreshToken", newRefreshToken);
+
+          if (typeof customConfig.headers.set === "function") {
+            customConfig.headers.set("Authorization", `Bearer ${newToken}`);
+          } else {
+            customConfig.headers["Authorization"] = `Bearer ${newToken}`;
+          }
+
+          processQueue(null, newToken);
+          isRefreshing = false;
+          return api(customConfig as any);
+        } catch (err) {
+          processQueue(err, null);
+          isRefreshing = false;
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("username");
+          localStorage.removeItem("roles");
+          localStorage.removeItem("user");
+          window.dispatchEvent(new Event("auth-change"));
+          return Promise.reject(err);
+        }
+      }
     }
 
     // Check if we should retry: Network Error or Server Unavailable (503, 504)
