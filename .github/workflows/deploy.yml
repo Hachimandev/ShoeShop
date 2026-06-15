@@ -25,6 +25,10 @@ jobs:
 
           cd ~/ShoeShopBackEnd
 
+          echo "===== Clean up Docker to free space ====="
+          docker system prune -a -f --volumes
+          docker builder prune -a -f || true
+
           echo "===== Pull latest code ====="
           git pull origin main
 
