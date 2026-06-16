@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ShoppingBag, Settings, Users, Box, UserCog, Truck, LayoutDashboard } from "lucide-react";
+import { ShoppingBag, Settings, Users, Box, UserCog, Truck, LayoutDashboard, Tags } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
@@ -35,6 +35,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { name: "Thống kê", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Đơn hàng", href: "/admin/orders", icon: ShoppingBag },
     { name: "Sản phẩm", href: "/admin/products", icon: Box },
+    { name: "Loại sản phẩm", href: "/admin/categories", icon: Tags },
     { name: "Nhà cung cấp", href: "/admin/suppliers", icon: Truck },
     { name: "Khách hàng", href: "/admin/customers", icon: Users },
     { name: "Nhân viên", href: "/admin/employees", icon: UserCog },
