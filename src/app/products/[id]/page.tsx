@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ProductComments from "@/components/products/ProductComments";
 import {
   ShoppingBag,
   ChevronLeft,
@@ -315,6 +316,7 @@ export default function ProductDetailPage({
             </div>
           </div>
         </div>
+        <ProductComments productId={id as string} />
       </main>
     </div>
   );
