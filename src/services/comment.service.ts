@@ -19,7 +19,7 @@ export interface CommentResponse {
 
 export const commentService = {
   getCommentsByProductId: async (productId: string): Promise<CommentResponse[]> => {
-    const response = await api.get(`/comments/${productId}`);
+    const response = await api.get(`/comments/by-product/${productId}`);
     return response.data;
   },
 
