@@ -1,11 +1,12 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
 import { DashboardStatCards } from "@/components/admin/dashboard/dashboard-stat-cards";
 import { DashboardRevenueChart } from "@/components/admin/dashboard/dashboard-revenue-chart";
 import { DashboardCategoryChart } from "@/components/admin/dashboard/dashboard-category-chart";
 import { DashboardRecentOrders } from "@/components/admin/dashboard/dashboard-recent-orders";
 import { useAdminDashboard } from "@/hooks/use-admin-dashboard";
+import { exportDashboardToExcel } from "@/lib/export-excel";
 
 export default function AdminDashboardPage() {
   const {
@@ -20,7 +21,13 @@ export default function AdminDashboardPage() {
     recentOrders,
     revenueSeriesForYear,
     formatVnd,
+    raw,
   } = useAdminDashboard();
+
+  const handleExport = () => {
+    if (!raw) return;
+    exportDashboardToExcel(raw, kpis, categorySlices, chartYear, revenueSeriesForYear);
+  };
 
   if (loading) {
     return (
@@ -48,13 +55,22 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-          Thống kê tổng quan
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Doanh thu, đơn hàng, tồn kho và khách hàng — dữ liệu từ hệ thống
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
+            Thống kê tổng quan
+          </h1>
+          <p className="mt-1 text-sm text-slate-600">
+            Doanh thu, đơn hàng, tồn kho và khách hàng — dữ liệu từ hệ thống
+          </p>
+        </div>
+        <button
+          onClick={handleExport}
+          className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        >
+          <Download className="h-4 w-4" />
+          Xuất Excel
+        </button>
       </div>
 
       <DashboardStatCards items={kpis} />
