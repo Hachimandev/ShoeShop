@@ -111,20 +111,16 @@ export default function AdminEmployeesPage() {
   const handleExport = async () => {
     try {
       setExporting(true);
-      const blob = await staffService.exportCsv({
-        search: search.trim() || undefined,
-        department,
-        status,
-      });
+      const blob = await staffService.exportToExcel();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "staffs.csv";
+      a.download = `staffs_${new Date().getTime()}.xlsx`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
       console.error(e);
-      alert("Không thể xuất CSV.");
+      alert("Không thể xuất Excel.");
     } finally {
       setExporting(false);
     }

@@ -52,4 +52,11 @@ export const productService = {
     });
     return response.data.imageUrl;
   },
+
+  exportToExcel: async (): Promise<Blob> => {
+    const response = await api.get("/products/export/excel", {
+      responseType: "blob",
+    });
+    return response.data;
+  },
 };

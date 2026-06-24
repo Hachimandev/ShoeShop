@@ -23,5 +23,12 @@ export const categoryService = {
 
   deleteCategory: async (id: string): Promise<void> => {
     await api.delete(`/categories/${id}`);
+  },
+
+  exportToExcel: async (): Promise<Blob> => {
+    const response = await api.get("/categories/export/excel", {
+      responseType: "blob",
+    });
+    return response.data;
   }
 };

@@ -74,4 +74,11 @@ export const staffService = {
     });
     return response.data;
   },
+
+  exportToExcel: async (): Promise<Blob> => {
+    const response = await api.get("/staffs/export/excel", {
+      responseType: "blob",
+    });
+    return response.data;
+  },
 };

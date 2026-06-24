@@ -67,6 +67,26 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleExportToExcel = async () => {
+    try {
+      setExporting(true);
+      const blob = await productService.exportToExcel();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `products_${new Date().getTime()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Failed to export products:", error);
+      alert("Lỗi khi xuất file Excel.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const stats = useMemo(() => {
     const total = products.length;
     const outOfStock = products.filter((p) => {
@@ -195,11 +215,20 @@ export default function AdminProductsPage() {
               <Button
                 variant="outline"
                 className="h-11 rounded-lg border-emerald-600 text-emerald-700 hover:bg-emerald-50"
-                onClick={() => {}}
+                onClick={handleExportToExcel}
                 disabled={exporting}
               >
-                <Upload className="mr-2 h-4 w-4" />
-                Xuất Excel
+                {exporting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Đang xuất...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Xuất Excel
+                  </>
+                )}
               </Button>
             </div>
           </div>
