@@ -5,7 +5,7 @@ import { categoryService, Category } from "@/services/category.service";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Loader2, Plus, Search, Edit, Trash2, Upload } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ export default function AdminCategoriesPage() {
   const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   // Dialog states
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -109,6 +110,26 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const handleExportToExcel = async () => {
+    try {
+      setExporting(true);
+      const blob = await categoryService.exportToExcel();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `categories_${new Date().getTime()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error("Failed to export categories:", error);
+      alert("Lỗi khi xuất file Excel.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -120,10 +141,25 @@ export default function AdminCategoriesPage() {
             Thêm, sửa, xóa các danh mục sản phẩm
           </p>
         </div>
-        <Button onClick={handleOpenAddDialog} className="bg-emerald-600 hover:bg-emerald-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Thêm loại
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+            onClick={handleExportToExcel}
+            disabled={exporting}
+          >
+            {exporting ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="mr-2 h-4 w-4" />
+            )}
+            Xuất Excel
+          </Button>
+          <Button onClick={handleOpenAddDialog} className="bg-emerald-600 hover:bg-emerald-700">
+            <Plus className="mr-2 h-4 w-4" />
+            Thêm loại
+          </Button>
+        </div>
       </div>
 
       <Card className="rounded-xl border border-slate-200/90 bg-white shadow-sm">
