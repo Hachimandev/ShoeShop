@@ -24,6 +24,8 @@ export function CheckoutSummary({
   loading,
   error,
 }: CheckoutSummaryProps) {
+  const subtotal = cart.subtotal || 0;
+
   return (
     <div className="space-y-6 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm sticky top-6">
       <div>
@@ -36,8 +38,16 @@ export function CheckoutSummary({
       <div className="space-y-3 border-b border-slate-200 pb-4">
         <div className="flex justify-between text-sm text-slate-600">
           <span>Tạm tính</span>
-          <span>{cart.totalPrice.toLocaleString("vi-VN")} ₫</span>
+          <span>{subtotal.toLocaleString("vi-VN")} ₫</span>
         </div>
+        
+        {cart.promotion && (
+          <div className="flex justify-between text-sm text-green-600">
+            <span>Giảm giá ({cart.promotion.condition})</span>
+            <span>-{cart.discountAmount?.toLocaleString("vi-VN")} ₫</span>
+          </div>
+        )}
+        
         <div className="flex justify-between text-sm text-slate-600">
           <span>Phí vận chuyển</span>
           <span>{shippingFee.toLocaleString("vi-VN")} ₫</span>

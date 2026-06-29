@@ -221,6 +221,7 @@ export default function ProductsPage() {
           className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary cursor-pointer text-slate-700 font-medium"
         >
           <option value="">Mặc định</option>
+          <option value="best_selling">Bán chạy nhất</option>
           <option value="newest">Mới nhất</option>
           <option value="price_low">Giá tăng dần</option>
           <option value="price_high">Giá giảm dần</option>
