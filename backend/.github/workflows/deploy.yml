@@ -1,0 +1,46 @@
+name: CI/CD Pipeline for ShoeShop Backend
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy to EC2 via SSH
+      uses: appleboy/ssh-action@v1.0.0
+
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USERNAME }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+
+        timeout: 120s
+        command_timeout: 30m
+
+        script: |
+          set -e
+
+          cd ~/ShoeShopBackEnd
+
+          echo "===== Clean up Docker to free space ====="
+          docker system prune -a -f --volumes
+          docker builder prune -a -f || true
+
+          echo "===== Pull latest code ====="
+          git pull origin main
+
+          echo "===== Stop old containers ====="
+          docker-compose down
+
+          echo "===== Build backend ====="
+          DOCKER_BUILDKIT=0 COMPOSE_DOCKER_CLI_BUILD=0 docker-compose build backend
+
+          echo "===== Start containers ====="
+          docker-compose up -d
+
+          echo "===== Remove unused images ====="
+          docker image prune -af
+          echo "===== Deployment completed successfully ====="

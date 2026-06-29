@@ -1,0 +1,70 @@
+services:
+  db:
+    image: mariadb:10.11
+    container_name: shoeshop_db
+    restart: always
+    environment:
+      MARIADB_DATABASE: shoeshop
+      MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./data_import.sql:/docker-entrypoint-initdb.d/data_import.sql
+    networks:
+      - shoeshop-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: shoeshop_backend
+    restart: always
+    ports:
+      - "127.0.0.1:8080:8080"
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/shoeshop
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - shoeshop-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: shoeshop_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - shoeshop-network
+
+
+  nginx:
+    image: nginx:latest
+    container_name: shoeshop_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - backend
+    networks:
+      - shoeshop-network
+
+networks:
+  shoeshop-network:
+    driver: bridge
+
+volumes:
+  mariadb_data:
