@@ -150,5 +150,6 @@ export function useAdminDashboard() {
     recentOrders: metrics?.recent ?? [],
     revenueSeriesForYear,
     formatVnd,
+    raw,
   };
 }

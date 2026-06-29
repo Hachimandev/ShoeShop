@@ -6,6 +6,7 @@ import com.fit.shoeshopbackend.config.AccountDetails;
 import com.fit.shoeshopbackend.dto.AuthRequest;
 import com.fit.shoeshopbackend.dto.AuthResponse;
 import com.fit.shoeshopbackend.dto.GoogleLoginRequest;
+import com.fit.shoeshopbackend.dto.RefreshTokenRequest;
 import com.fit.shoeshopbackend.dto.RegisterRequest;
 import com.fit.shoeshopbackend.model.Customer;
 import com.fit.shoeshopbackend.model.Role;
@@ -18,6 +19,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
@@ -27,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +48,9 @@ public class AuthController {
     @Autowired private StringRedisTemplate redisTemplate;
     @Autowired private com.fit.shoeshopbackend.service.EmailService emailService;
 
+    @Value("${google.oauth.client-ids:${GOOGLE_CLIENT_ID:}}")
+    private String googleClientIds;
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest req) {
         try {
@@ -53,12 +59,17 @@ public class AuthController {
             );
             var userDetails = (AccountDetails) auth.getPrincipal();
             String token = jwtUtil.generateToken(userDetails);
+            String refreshToken = jwtUtil.generateRefreshToken();
+            redisTemplate.opsForValue().set("refresh_token:" + refreshToken, userDetails.getUsername(), 7, TimeUnit.DAYS);
 
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .toList();
 
-            return ResponseEntity.ok(new AuthResponse(token, userDetails.getUsername(), roles));
+            Account user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Account not found"));
+
+            return ResponseEntity.ok(new AuthResponse(token, refreshToken, userDetails.getUsername(), user.getAccountId(), roles));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(401).body(Map.of("error", "Tên đăng nhập hoặc mật khẩu không đúng."));
         } catch (Exception e) {
@@ -165,24 +176,41 @@ public class AuthController {
     }
 
 
+    @Transactional
     @PostMapping("/login-google")
-    public AuthResponse loginWithGoogle(@RequestBody GoogleLoginRequest req) {
+    public ResponseEntity<?> loginWithGoogle(@RequestBody GoogleLoginRequest req) {
 
         try {
+            if (req.getIdToken() == null || req.getIdToken().isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Google ID token is required."));
+            }
+
+            List<String> audiences = Arrays.stream(googleClientIds.split(","))
+                    .map(String::trim)
+                    .filter(clientId -> !clientId.isBlank())
+                    .toList();
+
+            if (audiences.isEmpty()) {
+                return ResponseEntity.status(500).body(Map.of("error", "Google OAuth client id is not configured."));
+            }
+
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(),
                     new GsonFactory()
-            ).setAudience(List.of("586282939098-ju8to28c5rspseash1t3cng4r6d1ursl.apps.googleusercontent.com", "586282939098-61fm5vqcb51lc312l502b7j8t7oukiv8.apps.googleusercontent.com"))
+            ).setAudience(audiences)
                     .build();
 
             GoogleIdToken idToken = verifier.verify(req.getIdToken());
             if (idToken == null) {
-                throw new RuntimeException("Token Google không hợp lệ");
+                return ResponseEntity.status(401).body(Map.of("error", "Google token is invalid."));
             }
 
             GoogleIdToken.Payload payload = idToken.getPayload();
+            if (!Boolean.TRUE.equals(payload.getEmailVerified())) {
+                return ResponseEntity.status(401).body(Map.of("error", "Google email is not verified."));
+            }
 
-            String email = payload.getEmail();
+            String email = payload.getEmail().trim().toLowerCase();
             String fullName = (String) payload.get("name");
 
             // --- kiểm tra tài khoản ---
@@ -194,7 +222,7 @@ public class AuthController {
                         .accountId(UUID.randomUUID().toString())
                         .username(email)
                         .email(email)
-                        .password(passwordEncoder.encode("GOOGLE_USER"))
+                        .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                         .roles(Set.of(Role.ROLE_USER))
                         .build();
 
@@ -215,14 +243,46 @@ public class AuthController {
             // --- tạo JWT ---
             AccountDetails details = new AccountDetails(user);
             String token = jwtUtil.generateToken(details);
+            String refreshToken = jwtUtil.generateRefreshToken();
+            redisTemplate.opsForValue().set("refresh_token:" + refreshToken, user.getUsername(), 7, TimeUnit.DAYS);
 
             List<String> roles = user.getRoles().stream().map(Enum::name).toList();
 
-            return new AuthResponse(token, user.getUsername(), roles);
+            return ResponseEntity.ok(new AuthResponse(token, refreshToken, user.getUsername(), user.getAccountId(), roles));
 
         } catch (Exception e) {
-            throw new RuntimeException("Login Google thất bại: " + e.getMessage());
+            return ResponseEntity.status(500).body(Map.of("error", "Google login failed: " + e.getMessage()));
         }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestBody RefreshTokenRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+        if (requestRefreshToken == null || requestRefreshToken.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Refresh token is missing."));
+        }
+
+        String username = redisTemplate.opsForValue().get("refresh_token:" + requestRefreshToken);
+        if (username == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid or expired refresh token."));
+        }
+
+        Account user = userRepository.findByUsername(username).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "User not found."));
+        }
+
+        AccountDetails userDetails = new AccountDetails(user);
+        String newToken = jwtUtil.generateToken(userDetails);
+        String newRefreshToken = jwtUtil.generateRefreshToken();
+
+        // Xóa token cũ và lưu token mới
+        redisTemplate.delete("refresh_token:" + requestRefreshToken);
+        redisTemplate.opsForValue().set("refresh_token:" + newRefreshToken, username, 7, TimeUnit.DAYS);
+
+        List<String> roles = user.getRoles().stream().map(Enum::name).toList();
+
+        return ResponseEntity.ok(new AuthResponse(newToken, newRefreshToken, username, user.getAccountId(), roles));
     }
 
     @PostMapping("/forgot-password/send-otp")

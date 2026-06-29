@@ -2,14 +2,40 @@
 
 Chào mừng bạn đến với dự án **ShoeShop**, một nền tảng thương mại điện tử chuyên cung cấp giày dép với trải nghiệm người dùng cao cấp, hiện đại và mượt mà.
 
-## 📸 1. Giao diện người dùng (Screenshot)
+## 💻 1. Công nghệ sử dụng trong project
 
-Giao diện cửa hàng được thiết kế theo phong cách hiện đại (Premium Design), tập trung vào việc làm nổi bật sản phẩm và mang lại trải nghiệm mua sắm trực quan, thân thiện nhất.
+**Frontend:**
+- Framework: Next.js (React)
+- Thiết kế UI: Các thư viện CSS hiện đại mang phong cách Premium Design.
 
-![Giao diện Frontend](docs/images/shoeshop_screenshot.png)
+**Backend:**
+- Framework: Spring Boot (Java)
+- CSDL: MariaDB
+- Caching: Redis
+
+**Deployment & DevOps:**
+- Containerization: Docker & Docker Compose
+- Proxy/Web Server: Nginx
+
 ---
 
-## 🏗️ 2. Sơ đồ kiến trúc hệ thống (Architecture Diagram)
+## ⚙️ 2. Các chức năng trong hệ thống
+
+**Dành cho khách hàng (Customer):**
+- Đăng ký, đăng nhập và xác thực bảo mật.
+- Xem danh sách sản phẩm, chi tiết sản phẩm, tìm kiếm và lọc nâng cao.
+- Thêm sản phẩm vào giỏ hàng và tiến hành đặt hàng.
+- Theo dõi lịch sử mua hàng và trạng thái đơn hàng.
+
+**Dành cho quản trị viên (Admin):**
+- Quản lý danh mục, sản phẩm, kho hàng.
+- Quản lý đơn hàng và cập nhật trạng thái đơn hàng.
+- Quản lý người dùng và phân quyền hệ thống.
+- Xem thống kê doanh thu, báo cáo.
+
+---
+
+## 🏗️ 3. Sơ đồ kiến trúc hệ thống (Architecture Diagram)
 
 Hệ thống được thiết kế theo mô hình client-server, tách biệt hoàn toàn giữa Frontend và Backend. Các dịch vụ Backend được đóng gói (containerized) thông qua Docker.
 
@@ -35,7 +61,7 @@ graph TD
 
 ---
 
-## 🚀 3. Hướng dẫn cài đặt và khởi chạy với Docker Compose
+## 🚀 4. Hướng dẫn cài đặt và khởi chạy với Docker Compose
 
 Dự án sử dụng `docker-compose` để dễ dàng triển khai và quản lý các dịch vụ Backend (MariaDB, Redis, Spring Boot, Nginx) chỉ với vài thao tác.
 
